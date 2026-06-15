@@ -40,9 +40,13 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:3000",
+
       "https://hesaburdc.com",
-      "https://www.hesaburdc.com"
+      "https://www.hesaburdc.com",
+
+      "https://hesabu-frontend-tp1n.onrender.com"
     ],
+
     credentials: true
   })
 );
