@@ -64,7 +64,7 @@ exports.login = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      error: error.message
+      message: "Une erreur interne est survenue."
     });
   }
 };
