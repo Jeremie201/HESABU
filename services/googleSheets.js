@@ -1,15 +1,31 @@
 const { google } = require("googleapis");
 
+// Vérification des variables nécessaires
+const requiredEnv = [
+  "GOOGLE_PROJECT_ID",
+  "GOOGLE_CLIENT_EMAIL",
+  "GOOGLE_PRIVATE_KEY",
+];
+
+for (const variable of requiredEnv) {
+  if (!process.env[variable]) {
+    throw new Error(
+      `Variable d'environnement manquante : ${variable}`
+    );
+  }
+}
+
+// Authentification Google
 const auth = new google.auth.GoogleAuth({
   credentials: {
     project_id: process.env.GOOGLE_PROJECT_ID,
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key:
-      process.env.GOOGLE_PRIVATE_KEY.replace(
-        /\\n/g,
-        "\n"
-      ),
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(
+      /\\n/g,
+      "\n"
+    ),
   },
+
   scopes: [
     "https://www.googleapis.com/auth/spreadsheets",
   ],
@@ -17,28 +33,45 @@ const auth = new google.auth.GoogleAuth({
 
 const sheets = google.sheets({
   version: "v4",
-  auth
+  auth,
 });
 
 const SPREADSHEET_ID =
   "1Skz257Qu02uR979PLuaSA0-lRG3MJXSuvWI6ujSzFIQ";
 
-module.exports = {
-  sheets,
-  SPREADSHEET_ID
+// Protection contre l'injection de formules Google Sheets
+const safeSheetValue = (value) => {
+  if (
+    value === undefined ||
+    value === null
+  ) {
+    return "";
+  }
+
+  const stringValue = String(value);
+
+  if (
+    stringValue.startsWith("=") ||
+    stringValue.startsWith("+") ||
+    stringValue.startsWith("-") ||
+    stringValue.startsWith("@")
+  ) {
+    return `'${stringValue}`;
+  }
+
+  return stringValue;
 };
 
+// Ajouter un contact
 const addContact = async ({
   nom,
   entreprise,
   email,
   telephone,
   sujet,
-  message
+  message,
 }) => {
-
   await sheets.spreadsheets.values.append({
-
     spreadsheetId: SPREADSHEET_ID,
 
     range: "Contacts!A:G",
@@ -46,56 +79,40 @@ const addContact = async ({
     valueInputOption: "USER_ENTERED",
 
     requestBody: {
+      values: [
+        [
+          new Date().toLocaleString(),
 
-      values: [[
+          safeSheetValue(nom),
 
-        new Date().toLocaleString(),
+          safeSheetValue(entreprise),
 
-        nom,
+          safeSheetValue(email),
 
-        entreprise || "",
+          safeSheetValue(telephone),
 
-        email,
+          safeSheetValue(sujet),
 
-        telephone || "",
-
-        sujet || "",
-
-        message || ""
-
-      ]]
-
-    }
-
+          safeSheetValue(message),
+        ],
+      ],
+    },
   });
-
 };
 
-
+// Ajouter un devis
 const addDevis = async ({
-
   nom,
-
   entreprise,
-
   email,
-
   telephone,
-
   secteurActivite,
-
   typeVehicule,
-
   nombreVehicules,
-
   service,
-
-  message
-
+  message,
 }) => {
-
   await sheets.spreadsheets.values.append({
-
     spreadsheetId: SPREADSHEET_ID,
 
     range: "Devis!A:J",
@@ -103,46 +120,38 @@ const addDevis = async ({
     valueInputOption: "USER_ENTERED",
 
     requestBody: {
+      values: [
+        [
+          new Date().toLocaleString(),
 
-      values: [[
+          safeSheetValue(nom),
 
-        new Date().toLocaleString(),
+          safeSheetValue(entreprise),
 
-        nom,
+          safeSheetValue(email),
 
-        entreprise || "",
+          safeSheetValue(telephone),
 
-        email,
+          safeSheetValue(
+            secteurActivite
+          ),
 
-        telephone || "",
+          safeSheetValue(typeVehicule),
 
-        secteurActivite || "",
+          safeSheetValue(
+            nombreVehicules
+          ),
 
-        typeVehicule || "",
+          safeSheetValue(service),
 
-        nombreVehicules || "",
-
-        service || "",
-
-        message || ""
-
-      ]]
-
-    }
-
+          safeSheetValue(message),
+        ],
+      ],
+    },
   });
-
 };
 
-
 module.exports = {
-
-  sheets,
-
-  SPREADSHEET_ID,
-
   addContact,
-
-  addDevis
-
+  addDevis,
 };
