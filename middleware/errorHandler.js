@@ -1,19 +1,18 @@
-const errorHandler = (
-  err,
-  req,
-  res,
-  next
-) => {
+const errorHandler = (err, req, res, next) => {
   console.error(err);
 
   const statusCode =
-    err.statusCode || 500;
+    Number.isInteger(err.statusCode) &&
+    err.statusCode >= 400 &&
+    err.statusCode <= 599
+      ? err.statusCode
+      : 500;
 
   res.status(statusCode).json({
     success: false,
     message:
       process.env.NODE_ENV === "production"
-        ? "Erreur serveur"
+        ? "Une erreur interne est survenue."
         : err.message,
   });
 };
