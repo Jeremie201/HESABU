@@ -41,8 +41,8 @@ app.use(
       "http://localhost:5173",
       "http://localhost:3000",
 
-      "https://hesaburdc.com",
-      "https://www.hesaburdc.com",
+      "https://hesabudrc.com",
+      "https://www.hesabudrc.com",
 
       "https://hesabu-frontend-tp1n.onrender.com"
     ],
